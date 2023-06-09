@@ -2,6 +2,7 @@ package com.alura.alurabank.controller;
 
 import com.alura.alurabank.dominio.ContaCorrente;
 import com.alura.alurabank.dominio.Correntista;
+import com.alura.alurabank.dominio.MovimentacaoDeContas;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ public class ContaCorrenteController {
             @RequestParam(name = "numero" )String numero){
         return String.format("Banco: %s, Agencia: %s, Conta: %s. Saldo: R$1300,00",
                 banco, agencia, numero);
+        // http://localhost:8080/contas?banco=888&agencia=1111&numero=3333
     }
     @PostMapping
     public ResponseEntity<ContaCorrente> criarNovaConta(@RequestBody Correntista correntista){
@@ -27,5 +29,10 @@ public class ContaCorrenteController {
         return "Conta fechada com sucesso";
     }
 
-// http://localhost:8080/contas?banco=888&agencia=1111&numero=3333
+    @PutMapping
+    public ResponseEntity<MovimentacaoDeContas> movimentacaoConta(
+            @RequestBody MovimentacaoDeContas movimentacao){
+       return ResponseEntity.ok(movimentacao);
+    }
+
 }

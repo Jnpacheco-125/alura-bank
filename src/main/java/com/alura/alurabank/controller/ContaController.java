@@ -3,13 +3,20 @@ package com.alura.alurabank.controller;
 import com.alura.alurabank.dominio.ContaCorrente;
 import com.alura.alurabank.dominio.Correntista;
 import com.alura.alurabank.dominio.MovimentacaoDeContas;
+import com.alura.alurabank.repositorio.RepositorioContaCorrente;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Random;
+
 @RestController
 @RequestMapping("/contas")
-public class ContaCorrenteController {
+public class ContaController {
+
+    @Autowired
+    private RepositorioContaCorrente repositorioContaCorrente;
     @GetMapping
     public String consultarSaldo(
             @RequestParam(name = "banco" ) String banco,
@@ -21,7 +28,11 @@ public class ContaCorrenteController {
     }
     @PostMapping
     public ResponseEntity<ContaCorrente> criarNovaConta(@RequestBody Correntista correntista){
-        ContaCorrente conta = new ContaCorrente("111","2222","3333");
+        String banco = "333";
+        String agencia = "44444";
+        String numero = Integer.toString(new Random().nextInt(Integer.MAX_VALUE));
+        ContaCorrente conta = new ContaCorrente(banco, agencia, numero, correntista);
+        repositorioContaCorrente.salvar(conta);
         return ResponseEntity.status(HttpStatus.CREATED).body(conta);
     }
     @DeleteMapping

@@ -2,15 +2,24 @@ package com.alura.alurabank.dominio;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.util.Objects;
 
+
+@EqualsAndHashCode(
+       // of = {"banco", "agencia", "numero"}), // Os atributos que eu quero
+        exclude = {"correntista", "saldo"}) // tudo menos esses dois
 public class ContaCorrente {
+    @Getter
     @JsonProperty
     private String banco;
+    @Getter
     @JsonProperty
     private String agencia;
+    @Getter
     @JsonProperty
     private String numero;
     @JsonProperty
@@ -53,31 +62,4 @@ public class ContaCorrente {
     public void executar(Operacao operacao, BigDecimal valor){
         saldo = operacao.executar(saldo, valor);
     }
-
-    public String getBanco() {
-        return banco;
-    }
-
-    public String getAgencia() {
-        return agencia;
-    }
-
-    public String getNumero() {
-        return numero;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ContaCorrente that = (ContaCorrente) o;
-        return Objects.equals(banco, that.banco) && Objects.equals(agencia, that.agencia) && Objects.equals(numero, that.numero);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(banco, agencia, numero);
-    }
-
-
 }

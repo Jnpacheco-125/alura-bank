@@ -15,7 +15,7 @@ public class ContaCorrente {
     private String numero;
     @JsonProperty
     private BigDecimal saldo;
-    @JsonIgnore
+    @JsonProperty
     private Correntista correntista;
 
     public ContaCorrente(String banco, String agencia, String numero, Correntista correntista) {
@@ -29,6 +29,12 @@ public class ContaCorrente {
 
     public ContaCorrente() {
         this.saldo = BigDecimal.ZERO;
+    }
+
+    public ContaCorrente(String banco, String agencia, String numero) {
+        this.banco = banco;
+        this.agencia = agencia;
+        this.numero = numero;
     }
 
     public int obterNumeroConta(){
@@ -72,4 +78,6 @@ public class ContaCorrente {
     public int hashCode() {
         return Objects.hash(banco, agencia, numero);
     }
+
+
 }

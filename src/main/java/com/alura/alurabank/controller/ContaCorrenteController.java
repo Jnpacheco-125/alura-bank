@@ -1,9 +1,13 @@
 package com.alura.alurabank.controller;
 
+import com.alura.alurabank.config.JMapperBean;
+import com.alura.alurabank.controller.form.ContaCorrenteForm;
+import com.alura.alurabank.controller.form.CorrentistaForm;
 import com.alura.alurabank.dominio.ContaCorrente;
 import com.alura.alurabank.dominio.Correntista;
 import com.alura.alurabank.dominio.MovimentacaoDeContas;
 import com.alura.alurabank.repositorio.RepositorioContaCorrente;
+import com.googlecode.jmapper.JMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,10 +18,12 @@ import java.util.Random;
 
 @RestController
 @RequestMapping("/contas")
-public class ContaController {
+public class ContaCorrenteController {
 
     @Autowired
     private RepositorioContaCorrente repositorioContaCorrente;
+//    @Autowired
+//    private JMapper<ContaCorrente, ContaCorrenteForm> contaCorrenteMapper;
     @GetMapping
     public String consultarSaldo(
             @RequestParam(name = "banco" ) String banco,
@@ -29,7 +35,8 @@ public class ContaController {
         // http://localhost:8080/contas?banco=888&agencia=1111&numero=3333
     }
     @PostMapping
-    public ResponseEntity<ContaCorrente> criarNovaConta(@RequestBody Correntista correntista){
+    public ResponseEntity<ContaCorrente> criarNovaConta(@RequestBody CorrentistaForm correntistaForm){
+        Correntista correntista = correntistaForm.toCorrentista();
         String banco = "333";
         String agencia = "44444";
         String numero = Integer.toString(new Random().nextInt(Integer.MAX_VALUE));
@@ -38,8 +45,9 @@ public class ContaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(conta);
     }
     @DeleteMapping
-    private String fecharConta(ContaCorrente conta){
-        repositorioContaCorrente.fechar(conta);
+    private String fecharConta(@RequestBody ContaCorrenteForm contaCorrenteForm){
+        ContaCorrente contaCorrente = contaCorrenteForm.toContaCorrente();
+        repositorioContaCorrente.fechar(contaCorrente);
         return "Conta fechada com sucesso";
     }
 

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.Random;
 
 @RestController
@@ -22,8 +23,9 @@ public class ContaController {
             @RequestParam(name = "banco" ) String banco,
             @RequestParam(name = "agencia" )String agencia,
             @RequestParam(name = "numero" )String numero){
-        return String.format("Banco: %s, Agencia: %s, Conta: %s. Saldo: R$1300,00",
-                banco, agencia, numero);
+        ContaCorrente contaCorrente = repositorioContaCorrente.buscar(banco, agencia, numero).orElse(new ContaCorrente());
+        return String.format("Banco: %s, Agencia: %s, Conta: %s. Saldo: %s",
+                banco, agencia, numero, contaCorrente.lerSaldo());
         // http://localhost:8080/contas?banco=888&agencia=1111&numero=3333
     }
     @PostMapping
@@ -37,13 +39,25 @@ public class ContaController {
     }
     @DeleteMapping
     private String fecharConta(ContaCorrente conta){
+        repositorioContaCorrente.fechar(conta);
         return "Conta fechada com sucesso";
     }
 
     @PutMapping
-    public ResponseEntity<MovimentacaoDeContas> movimentacaoConta(
+    public ResponseEntity<String> movimentacaoConta(
             @RequestBody MovimentacaoDeContas movimentacao){
-       return ResponseEntity.ok(movimentacao);
-    }
-
+        Optional<ContaCorrente> opContaCorrente =
+                repositorioContaCorrente.buscar(movimentacao.getBanco(),
+                movimentacao.getAgencia(),
+                movimentacao.getNumero());
+        if(opContaCorrente.isEmpty()){
+            return ResponseEntity.badRequest().body("Conta corrente não existe");
+        }
+        else{
+            ContaCorrente contaCorrente = opContaCorrente.get();
+            movimentacao.executarEm(contaCorrente);
+            repositorioContaCorrente.salvar(contaCorrente);
+            return ResponseEntity.ok("Movimentação realizada com sucesso");
+        }
+     }
 }

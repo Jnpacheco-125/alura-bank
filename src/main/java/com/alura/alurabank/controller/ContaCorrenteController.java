@@ -8,13 +8,20 @@ import com.alura.alurabank.dominio.Correntista;
 import com.alura.alurabank.dominio.MovimentacaoDeContas;
 import com.alura.alurabank.repositorio.RepositorioContaCorrente;
 import com.googlecode.jmapper.JMapper;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Path;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/contas")
@@ -24,6 +31,8 @@ public class ContaCorrenteController {
     private RepositorioContaCorrente repositorioContaCorrente;
 //    @Autowired
 //    private JMapper<ContaCorrente, ContaCorrenteForm> contaCorrenteMapper;
+    @Autowired
+    private Validator validator;
     @GetMapping
     public String consultarSaldo(
             @RequestParam(name = "banco" ) String banco,
@@ -35,7 +44,10 @@ public class ContaCorrenteController {
         // http://localhost:8080/contas?banco=888&agencia=1111&numero=3333
     }
     @PostMapping
-    public ResponseEntity<ContaCorrente> criarNovaConta(@RequestBody CorrentistaForm correntistaForm){
+    public ResponseEntity criarNovaConta(@RequestBody CorrentistaForm correntistaForm){
+        Map<Path, String> violacoesToMap = validar(correntistaForm);
+
+        if(!violacoesToMap.isEmpty()) return ResponseEntity.badRequest().body(violacoesToMap);
         Correntista correntista = correntistaForm.toCorrentista();
         String banco = "333";
         String agencia = "44444";
@@ -44,11 +56,24 @@ public class ContaCorrenteController {
         repositorioContaCorrente.salvar(conta);
         return ResponseEntity.status(HttpStatus.CREATED).body(conta);
     }
+
+    private  <T> Map<Path, String> validar(T form) {
+        Set<ConstraintViolation<T>> violacoes =
+                validator.validate(form);
+        Map<Path, String> violacoesToMap = violacoes
+                .stream()
+                .collect(Collectors.toMap(
+                violacao -> violacao.getPropertyPath(), violacao -> violacao.getMessage()));
+        return violacoesToMap;
+    }
+
     @DeleteMapping
-    private String fecharConta(@RequestBody ContaCorrenteForm contaCorrenteForm){
+    private ResponseEntity  fecharConta(@RequestBody ContaCorrenteForm contaCorrenteForm){
+        Map<Path, String> violacoesToMap = validar(contaCorrenteForm);
+        if(!violacoesToMap.isEmpty()) return ResponseEntity.badRequest().body(violacoesToMap);
         ContaCorrente contaCorrente = contaCorrenteForm.toContaCorrente();
         repositorioContaCorrente.fechar(contaCorrente);
-        return "Conta fechada com sucesso";
+        return ResponseEntity.ok("Conta fechada com sucesso");
     }
 
     @PutMapping
